@@ -1,8 +1,7 @@
-import socket, sys, ssl, time
+#!/usr/bin/python2
 from datetime import datetime
-from socket import AF_INET, SOCK_STREAM, SO_REUSEADDR, SOL_SOCKET, SHUT_RDWR
 from thread import start_new_thread
-
+import socket, sys, time, os, ast, ssl
 
 class bcolors:
     HEADER = '\033[95m'
@@ -14,22 +13,29 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-
 KEYFILE='key.pem'
 CERTFILE='crt.pem'
 
-host=''
-port=int(sys.argv[1])
 
-context=ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-context.load_cert_chain(certfile=CERTFILE, keyfile=KEYFILE)
+try:
+ host=''
+ port=int(sys.argv[1])
+except:
+ print "Use:", sys.argv[0],"PORT"
+ quit()
+try:
+ context=ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+ context.load_cert_chain(certfile=CERTFILE, keyfile=KEYFILE)
+except:
+ print "You need to generate your own key, to do that you need the package \"openssl\" and run:\n"+bcolors.OKBLUE+"openssl genrsa -out key.pem && yes '' | openssl req -new -x509 -key key.pem -out crt.pem"+bcolors.ENDC
+ quit()
 
 connect=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 orig=(host, port)
 connect.bind(orig)
 connect.listen(1)
 
-connect.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+connect.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 #max number of connetions
 limit=200
@@ -37,108 +43,136 @@ con=["0"]*limit
 client=["0"]*limit
 nick=["0"]*limit
 
+def getclock():
+ time=datetime.now()
+ clock="["+str(time.hour+100)[1::]+":"+str(time.minute+100)[1::]+":"+str(time.second+100)[1::]+"] "
+ return clock
+#procedure to finish client connections
+def down(index):
+ clock=getclock()
+ print clock+"Client "+str(index)+" fell."
+#the value 1 indicates that the socket was in using but now is free, 0 means that the socket is virgin
+ msg=bcolors.FAIL+clock+"User "+nick[index]+" exits."+bcolors.ENDC
+ try:
+  con[index].close()
+ except Exception as error:
+  print "Error! "+str(error)
+ con[index]="1"
+ client[index]="1"
+ nick[index]="1"
+ j=0
+ while(j<limit and con[j]!="0"):
+  if(con[j]!="1" and j!=index):
+   try:
+    con[j].sendall(j)
+   except Exception as error:
+    print "Error! "+str(error)
+  j=j+1
+
+def is_number(var):
+  try:
+    float(var)
+    return True
+  except:
+    return False
+
 #function that will manage the connection called by the index
 #all the connections will have a dedicated thread running this function
 def receive(index):
-	conn=con[index]
-	nick[index]=conn.recv(50)
-	Nick=nick[index]
-	print client[index],Nick
-	j=0
-	clock=datetime.now()
-	timer="["+str(clock.hour+100)[1::]+":"+str(clock.minute+100)[1::]+":"+str(clock.second+100)[1::]+"] "
-
-	while(j<limit and con[j]!="0"):
-		if(con[j]!="1" and j!=index):
-			message=bcolors.FAIL+timer+"User "+Nick+" came into the room."+bcolors.ENDC
-			try:
-				con[j].sendall(message)
-			except:
-				print "ERROR"
-		j=j+1
-	while(1):
-		msg=conn.recv(10000)
-		clock=datetime.now()
-		timer="["+str(clock.hour+100)[1::]+":"+str(clock.minute+100)[1::]+":"+str(clock.second+100)[1::]+"] "
-		if not msg:
-			print timer+"Client "+str(index)+" exits."
-			conn.close()
-#the value 1 indicates that the socket was in using but now is free, 0 means that the socket is virgin
-			con[index]="1"
-			client[index]="1"
-			nick[index]="1"
-			msg=bcolors.FAIL+timer+"User "+Nick+" exits."+bcolors.ENDC
-			j=0
-			while(j<limit and con[j]!="0"):
-				if(con[j]!="1" and j!=index):
-					try:
-						con[j].sendall(msg)
-					except:
-						print "ERROR"
-				j=j+1
-			break
+ try:
+  conn=con[index]
+  
+  nick[index]=conn.recv(50)
+  Nick=nick[index]
+  if(is_number(Nick)):
+   conn.sendall(bcolors.FAIL+"Your nick can\'t be a number!\n\n\n"+bcolors.ENDC)
+   down(index)
+  print client[index],Nick,index
+  j=0
+  while(j<limit and con[j]!="0"):
+   clock=getclock()
+   if(con[j]!="1" and j!=index):
+    message=bcolors.FAIL+clock+"User "+Nick+" came into the room."+bcolors.ENDC
+    con[j].sendall(message)
+   j=j+1
+  while(1):
+   msg=str(conn.recv(10000))
+   if not msg:
+    down(index)
+    break
 #if the message is /who, all the users in the room will be listed
-		if(msg=="/who"):
-			j=0
-			output=bcolors.OKGREEN+"Users: "
-			while(nick[j]!="0"):
-				if(nick[j]=="1"):
-					continue
-				else:
-					output=output+"\n"+nick[j]
-				j=j+1		
-			try:
-				con[index].sendall(output+bcolors.ENDC)
-			except:
-				print "ERROR /who"
-		else:
-			msg=timer+Nick+": "+msg
-			print msg, index
-			j=0
-			while(j<limit and con[j]!="0"):
-				if(con[j]!="1" and j!=index):
-					try:
-						con[j].sendall(msg)
-					except:
-						print "ERROR"
-				j=j+1
+   if(msg=="/who"):
+    j=0
+    output=bcolors.OKGREEN+"Users: "
+    while(nick[j]!="0"):
+     if(nick[j]!="1"):
+      output=output+"\n"+nick[j]
+     j=j+1
+    conn.sendall(str(output+bcolors.ENDC))
+   else:
+    clock=getclock()
+    msg=clock+Nick+": "+msg
+    print msg, index
+    j=0
+    while(j<limit and con[j]!="0"):
+     if(con[j]!="1" and j!=index):
+      con[j].sendall(msg)
+     j=j+1
+ except Exception as error:
+  try:
+   down(index)
+   print "Error! "+str(error)
+  except Exception as error:
+   print "Error! "+str(error)
+
 def main():
-	i=0
+ print bcolors.OKGREEN+"The server is ready!"+bcolors.ENDC
+ i=0
 #this variable will be used to save cpu
-	cpusave=0
-	while(1):
-		if(con[i]=="0" or con[i]=="1"):
-			con[i], client[i]=connect.accept()
-			try:
-				con[i]=context.wrap_socket(con[i], server_side=True)
-			except:
-				print "SSL ERROR"
-				error=bcolors.BOLD+bcolors.FAIL+"Problem with the SSL connection. Check if you have the SSL certificate"+bcolors.ENDC+bcolors.ENDC
-				con[i].sendall(error)
-				con[i].close()
-				con[i]=client[i]="0"
-				continue
-			start_new_thread(receive,(i,))
-			if(i==limit-1):
-				i=0
-			else:
-				i=i+1
-		elif(i<limit-1):
-			i=i+1
-		elif(cpusave==0):
-			i=0
-			cpusave=1
-		else:
+ cpusave=0
+ while(1):
+  if(con[i]=="0" or con[i]=="1"):
+   time.sleep(3)
+   con[i], client[i]=connect.accept()
+   try:
+    con[i]=context.wrap_socket(con[i], server_side=True)
+   except:
+    print "SSL ERROR"
+    error=bcolors.BOLD+bcolors.FAIL+"Problem with the SSL connection. Check if you have the SSL certificate"+bcolors.ENDC+bcolors.ENDC
+    con[i].sendall(error)
+    con[i].close()
+    con[i]=client[i]="0"
+    continue
+   start_new_thread(receive,(i,))
+   if(i==limit-1):
+    i=0
+   else:
+    i=i+1
+  elif(i<limit-1):
+   i=i+1
+  elif(cpusave==0):
+   i=0
+   cpusave=1
+  else:
 #here is where the variable act, after a complete loop in the list of connections
 #if no address is free, the program will sleep for 2 seconds before repeat the cicle
-			i=0
-			cpusave=0
-			time.sleep(2)
+   i=0
+   cpusave=0
+   time.sleep(2)
 
 try:
-	main()
+ main()
 except(KeyboardInterrupt):
-	print "Closing the connection."
-	connect.shutdown(socket.SHUT_RDWR)
-	connect.close()
-	quit()
+ print "Closing the connection."
+ i=0
+ while(con[i]!="0" and i<limit):
+  if(con[i]!="1"):
+   try:
+    con[i].shutdown(socket.SHUT_RDWR)
+    con[i].close()
+   except Exception as error:
+    print "Error! "+str(error)
+  i=i+1
+ connect.shutdown(socket.SHUT_RDWR)
+ connect.close()
+ quit()

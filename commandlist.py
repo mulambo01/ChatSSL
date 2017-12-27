@@ -9,7 +9,7 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-list = ['/clear', '/exit', '/who', '/help']
+list = ['/clear', '/exit', '/help']
 allcommands = ['/clear', '/exit', '/who', '/help', '/del']
 avoid = ['', ' ', '/n']
 texthelp=bcolors.OKGREEN+"Commands: "+str(allcommands)+"\nTo delete all the message run /del"+bcolors.ENDC
@@ -20,8 +20,6 @@ def sendcommand(msg):
     elif msg ==  '/exit':
         print bcolors.FAIL+"Leaving room..."+bcolors.ENDC
         exit();
-    elif msg ==  '/who':
-        return 1, '/who'
     elif msg =='/help':
         print texthelp
         return 0, ""

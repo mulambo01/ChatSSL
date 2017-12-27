@@ -1,8 +1,7 @@
 #!/usr/bin/python2
 import readline #this module improves the function raw_input()
 from multiprocessing import Process
-import signal
-import time, socket, sys, commandlist, ast, os, ssl
+import signal, socket, sys, commandlist, os, ssl
 
 PID=os.getpid()
 listening=["0"]*1

@@ -1,7 +1,7 @@
 #!/usr/bin/python2
 from datetime import datetime
 from thread import start_new_thread
-import socket, sys, time, os, ast, ssl
+import socket, sys, time, os, ssl
 
 class bcolors:
     HEADER = '\033[95m'
@@ -13,9 +13,8 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-KEYFILE='key.pem'
-CERTFILE='crt.pem'
-
+KEYFILE='keys/key.pem'
+CERTFILE='keys/crt.pem'
 
 try:
  host=''

@@ -2,6 +2,10 @@
 from datetime import datetime
 from thread import start_new_thread
 import socket, sys, time, os, ssl
+path=os.path.realpath(__file__)
+path=path.split("/")
+path[-1]=""
+path="/".join(path)
 
 class bcolors:
     HEADER = '\033[95m'
@@ -13,8 +17,8 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-KEYFILE='keys/key.pem'
-CERTFILE='keys/crt.pem'
+KEYFILE=path+'keys/key.pem'
+CERTFILE=path+'keys/crt.pem'
 
 try:
  host=''

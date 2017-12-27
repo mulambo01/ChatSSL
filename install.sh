@@ -1,14 +1,21 @@
 #!/bin/bash
 chmod +x client.py server.py
-ln -sf $PWD/server.py /usr/bin/chatsslserver
-ln -sf $PWD/client.py /usr/bin/chatssl
+
 mkdir keys
 echo -n "Do you want to generate the server keys? [Y/n] "
 read ANS
 if [ "$ANS" != "N" -o "$ANS" != "n" ]
 then
-openssl genrsa -out keys/key.pem && yes '' | openssl req -new -x509 -key keys/key.pem -out keys/crt.pem
+openssl genrsa -out keys/key.pem && yes '' | openssl req -new -x509 -key keys/key.pem -out keys/crt.pem > /dev/null
 fi
+
+if [ "$(whoami)" != "root" ]
+then
+echo "You need to be root to finish the installation!"
+exit 1
+fi
+ln -sf $PWD/server.py /usr/bin/chatsslserver
+ln -sf $PWD/client.py /usr/bin/chatssl
 echo -e "Creating a systemd service file:\n/etc/systemd/system/chatSSL.service"
 #default port
 PORT="7000"

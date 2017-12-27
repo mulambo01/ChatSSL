@@ -67,7 +67,7 @@ def down(index):
  while(j<limit and con[j]!="0"):
   if(con[j]!="1" and j!=index):
    try:
-    con[j].sendall(j)
+    con[j].sendall(msg)
    except Exception as error:
     print "Error! "+str(error)
   j=j+1

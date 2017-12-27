@@ -1,7 +1,7 @@
 #!/bin/bash
 chmod +x client.py server.py
-ln -sf $PWD/server.py /usr/bin/chatssl
-ln -sf $PWD/client.py /usr/bin/chatsslserver
+ln -sf $PWD/server.py /usr/bin/chatsslserver
+ln -sf $PWD/client.py /usr/bin/chatssl
 mkdir keys
 echo -n "Do you want to generate the server keys? [Y/n] "
 read ANS

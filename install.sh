@@ -7,12 +7,12 @@ read ANS
 if [ "$ANS" != "N" -o "$ANS" != "n" ]
 then
 openssl genrsa -out keys/key.pem && yes '' | openssl req -new -x509 -key keys/key.pem -out keys/crt.pem
-echo -n "\n"
+echo -en "\n"
 fi
 
 if [ "$(whoami)" != "root" ]
 then
-echo -e "You need to be root to finish the installation!"
+echo "You need to be root to finish the installation!"
 exit 1
 fi
 ln -sf $PWD/server.py /usr/bin/chatsslserver

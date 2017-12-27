@@ -12,6 +12,6 @@ fi
 echo -e "Creating a systemd service file:\n/etc/systemd/system/chatSSL.service"
 #default port
 PORT="7000"
-echo -e "[Unit]\nDescription=ChatSSL server\n[Service]\nType=simple\nExecStart=/usr/bin/python2 $PWD/server.py $PORT\nExecReload=/bin/kill -HUP \$MAINPID\n[Install]\nWantedBy=multi-user.target" > $PWD1/chatSSL.service
+echo -e "[Unit]\nDescription=ChatSSL server\n[Service]\nType=simple\nExecStart=/usr/bin/python2 $PWD/server.py $PORT\nExecReload=/bin/kill -HUP \$MAINPID\n[Install]\nWantedBy=multi-user.target" > $PWD/chatSSL.service
 ln -sf $PWD/chatSSL.service /etc/systemd/system/chatSSL.service
 echo "Success"

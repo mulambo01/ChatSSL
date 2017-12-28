@@ -1,10 +1,9 @@
 #!/usr/bin/python2
 import readline #this module improves the function raw_input()
-from multiprocessing import Process
+from thread import start_new_thread
 import signal, socket, sys, commandlist, os, ssl
 
 PID=os.getpid()
-listening=["0"]*1
 
 class bcolors:
  HEADER = '\033[95m'
@@ -45,8 +44,7 @@ def receive(tcp):
 
 def main():
 #thread to receive messages
- listening[0]=Process(target=receive, args=(tcp,))
- listening[0].start()
+ start_new_thread(receive, (tcp,))
  while(1):
   msg=raw_input()
   if msg in commandlist.list:
@@ -65,5 +63,4 @@ try:
 except(KeyboardInterrupt):
  print bcolors.FAIL+"Disconnected"+bcolors.ENDC
  tcp.close()
- listening[0].terminate()
  quit()

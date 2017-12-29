@@ -55,7 +55,7 @@ def down(index):
  clock=getclock()
  print clock+"Client "+str(index)+" fell."
 #the value 1 indicates that the socket was in using but now is free, 0 means that the socket is virgin
- msg=bcolors.FAIL+clock+"User "+nick[index]+" exits."+bcolors.ENDC
+ msg=clock+"User "+nick[index]+" exits."
  try:
   con[index].close()
  except Exception as error:
@@ -88,14 +88,14 @@ def receive(index):
   nick[index]=conn.recv(50)
   Nick=nick[index]
   if(is_number(Nick)):
-   conn.sendall(bcolors.FAIL+"Your nick can\'t be a number!\n\n\n"+bcolors.ENDC)
+   conn.sendall("Your nick can\'t be a number!")
    down(index)
   print client[index],Nick,index
   j=0
   while(j<limit and con[j]!="0"):
    clock=getclock()
    if(con[j]!="1" and j!=index):
-    message=bcolors.FAIL+clock+"User "+Nick+" came into the room."+bcolors.ENDC
+    message=clock+"User "+Nick+" came into the room."
     con[j].sendall(message)
    j=j+1
   while(1):
@@ -106,12 +106,12 @@ def receive(index):
 #if the message is /who, all the users in the room will be listed
    if(msg=="/who"):
     j=0
-    output=bcolors.OKGREEN+"Users: "
+    output="Users:"
     while(nick[j]!="0"):
      if(nick[j]!="1"):
       output=output+"\n"+nick[j]
      j=j+1
-    conn.sendall(str(output+bcolors.ENDC))
+    conn.sendall(str(output))
    else:
     clock=getclock()
     msg=clock+Nick+": "+msg
@@ -141,7 +141,7 @@ def main():
     con[i]=context.wrap_socket(con[i], server_side=True)
    except:
     print "SSL ERROR"
-    error=bcolors.BOLD+bcolors.FAIL+"Problem with the SSL connection. Check if you have the SSL certificate"+bcolors.ENDC+bcolors.ENDC
+    error="Problem with the SSL connection. Check if you have the SSL certificate"
     con[i].sendall(error)
     con[i].close()
     con[i]=client[i]="0"

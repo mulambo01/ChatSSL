@@ -6,7 +6,14 @@ path=os.path.realpath(__file__)
 path=path.split("/")
 path[-1]=""
 path="/".join(path)
-
+"""
+messages type:
+0 - normal message
+1 - new user in room
+2 - user exit
+3 - userlist
+4 - system message
+"""
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -67,7 +74,8 @@ def down(index):
  while(j<limit and con[j]!="0"):
   if(con[j]!="1" and j!=index):
    try:
-    con[j].sendall(msg)
+    msgtp="2-"
+    con[j].sendall(msgtp+msg)
    except Exception as error:
     print "Error! "+str(error)
   j=j+1
@@ -88,7 +96,8 @@ def receive(index):
   nick[index]=conn.recv(50)
   Nick=nick[index]
   if(is_number(Nick)):
-   conn.sendall("Your nick can\'t be a number!")
+   msgtp="4-"
+   conn.sendall(msgtp+"Your nick can\'t be a number!")
    down(index)
   print client[index],Nick,index
   j=0
@@ -96,8 +105,11 @@ def receive(index):
    clock=getclock()
    if(con[j]!="1" and j!=index):
     message=clock+"User "+Nick+" came into the room."
-    con[j].sendall(message)
+    msgtp="1-"
+    con[j].sendall(msgtp+message)
    j=j+1
+  msgtp="4-"
+  conn.sendall(msgtp+"You are connected!")
   while(1):
    msg=str(conn.recv(10000))
    if not msg:
@@ -111,7 +123,8 @@ def receive(index):
      if(nick[j]!="1"):
       output=output+"\n"+nick[j]
      j=j+1
-    conn.sendall(str(output))
+    msgtp="3-"
+    conn.sendall(msgtp+str(output))
    else:
     clock=getclock()
     msg=clock+Nick+": "+msg
@@ -119,7 +132,8 @@ def receive(index):
     j=0
     while(j<limit and con[j]!="0"):
      if(con[j]!="1" and j!=index):
-      con[j].sendall(msg)
+      msgtp="0-"
+      con[j].sendall(msgtp+msg)
      j=j+1
  except Exception as error:
   try:
@@ -141,8 +155,9 @@ def main():
     con[i]=context.wrap_socket(con[i], server_side=True)
    except:
     print "SSL ERROR"
-    error="Problem with the SSL connection. Check if you have the SSL certificate"
-    con[i].sendall(error)
+    error="Problem with the SSL connection."
+    msgtp="4-"
+    con[i].sendall(msgtp+error)
     con[i].close()
     con[i]=client[i]="0"
     continue

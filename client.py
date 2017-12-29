@@ -7,13 +7,16 @@ PID=os.getpid()
 
 class bcolors:
  HEADER = '\033[95m'
- OKBLUE = '\033[94m'
- OKGREEN = '\033[92m'
+ BLUE = '\033[94m'
+ GREEN = '\033[32m'
+ RED = '\033[31m'
+ YELLOW = '\033[33m'
+ PINK = '\033[35m'
  WARNING = '\033[93m'
- FAIL = '\033[91m'
  ENDC = '\033[0m'
  BOLD = '\033[1m'
  UNDERLINE = '\033[4m'
+ color=[BLUE, GREEN, YELLOW, BLUE, RED]
 
 try:
  host=sys.argv[1]
@@ -28,17 +31,24 @@ tcp=ssl.wrap_socket(conn)
 tcp.getpeercert(True)
 
 tcp.send(nick)
-print bcolors.OKGREEN+"You are connected!"+bcolors.ENDC
 
+mark="-"
+def findmarc(msg):
+ i=0
+ while(msg[i]!=mark):
+  i=i+1
+ return i
 def receive(tcp):
  while(1):
   msg=tcp.recv(10000)
   if not msg:
-   print bcolors.FAIL+"The connection was closed."+bcolors.ENDC
+   print bcolors.RED+"The connection was closed."+bcolors.ENDC
    os.kill(PID, signal.SIGUSR1)
    break
   try:
-   print bcolors.OKBLUE+msg+bcolors.ENDC
+   msgtp=int(msg.split(mark)[0])
+   msg=msg[findmarc(msg)+1::]
+   print bcolors.color[msgtp]+msg+bcolors.ENDC
   except Exception as error:
    print "Error! "+str(error)
 
@@ -52,7 +62,7 @@ def main():
    if c == 1:
     tcp.send(m)
   elif msg[-4:len(msg)]=="/del":
-   print bcolors.FAIL+bcolors.BOLD+"INPUT BUFFER IS CLEAN"+bcolors.ENDC+bcolors.ENDC
+   print bcolors.RED+bcolors.BOLD+"INPUT BUFFER IS CLEAN"+bcolors.ENDC+bcolors.ENDC
   elif not(msg in commandlist.avoid):
    try:
     tcp.send(msg)
@@ -61,6 +71,6 @@ def main():
 try:
  main()
 except(KeyboardInterrupt):
- print bcolors.FAIL+"Disconnected"+bcolors.ENDC
+ print bcolors.RED+"Disconnected"+bcolors.ENDC
  tcp.close()
  quit()

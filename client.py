@@ -33,11 +33,18 @@ tcp.getpeercert(True)
 tcp.send(nick)
 
 mark="-"
-def findmarc(msg):
+def findmark(msg, point):
  i=0
- while(msg[i]!=mark):
+ while(msg[i]!=point):
   i=i+1
  return i
+
+def call(msg):
+ testmsg=msg+" end"
+ if(len(testmsg.split(" "+nick+" "))>1):
+  return 1
+ else:
+  return 0
 def receive(tcp):
  while(1):
   msg=tcp.recv(10000)
@@ -47,7 +54,9 @@ def receive(tcp):
    break
   try:
    msgtp=int(msg.split(mark)[0])
-   msg=msg[findmarc(msg)+1::]
+   msg=msg[findmark(msg, mark)+1::]
+   if(call(msg)):
+    msg=msg+"\a"
    print bcolors.color[msgtp]+msg+bcolors.ENDC
   except Exception as error:
    print "Error! "+str(error)

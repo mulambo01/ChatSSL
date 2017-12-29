@@ -86,7 +86,16 @@ def is_number(var):
     return True
   except:
     return False
+banchar=[" ", "]", "[", ":"]
 
+def verifynick(nick):
+ if(is_number(nick)):
+  return False
+ for ch in banchar:
+  ch=str(ch)
+  if(len(str("start"+nick+"end").split(ch))>1):
+   return False
+ return True
 #function that will manage the connection called by the index
 #all the connections will have a dedicated thread running this function
 def receive(index):
@@ -95,9 +104,9 @@ def receive(index):
   
   nick[index]=conn.recv(50)
   Nick=nick[index]
-  if(is_number(Nick)):
+  if not verifynick(Nick):
    msgtp="4-"
-   conn.sendall(msgtp+"Your nick can\'t be a number!")
+   conn.sendall(msgtp+"Change your nick!")
    down(index)
   print client[index],Nick,index
   j=0
